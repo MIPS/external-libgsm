@@ -38,8 +38,6 @@ cc_library_static {
         "-DSASR",
         "-DWAV49",
         "-Wno-unused-parameter",
-        "-Wno-shift-negative-value",
-        "-Werror",
     ],
 
     export_include_dirs: ["inc"],
