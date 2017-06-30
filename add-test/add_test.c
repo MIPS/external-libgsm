@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "gsm.h"
 
@@ -29,14 +30,13 @@ word M_gsm_abs P((word op1));
 longword M_gsm_L_mult P((word op1, word op2));
 longword M_gsm_L_add P((longword op1, longword op2));
 
-help()
+void help()
 {
 puts( "  add a b      sub a b     mult a b   div    a b" );
 puts( "L_add A B    L_sub A B   L_mult A B   mult_r a b" );
 puts( "" );
 puts( "abs   a      norm  a        >> a b      << a b" );
 puts( "                          L_>> A B    L_<< A B" );
-
 }
 
 char * strtek P2((str, sep), char * str, char * sep) {
@@ -96,18 +96,18 @@ long value P1((s), char * s)
 char * parse P1((buf), char * buf)
 {
 	char  * s, * a;
-	long	l;
 
-	if (a = strchr(buf, '=')) *a++ = 0;
+	if ((a = strchr(buf, '=')) != 0) *a++ = 0;
 
 	opname = s = strtek(buf, " \t("); 
 	if (!s) return (char *)0;
 
 	op1 = op2 = L_op1 = L_op2 = 0;
 
-	if (s = strtek( (char *)0, "( \t,")) {
+	if ((s = strtek( (char *)0, "( \t,")) != 0) {
 		op1 = L_op1 = value(s);
-		if (s = strtek( (char *)0, ", \t)")) op2 = L_op2 = value(s);
+		if ((s = strtek( (char *)0, ", \t)")) != 0)
+			op2 = L_op2 = value(s);
 	}
 
 	if (a) {
@@ -136,8 +136,8 @@ void print_word P1((w), word w)
 void fprint_longword P2((f, w), FILE * f, longword w)
 {
 	if (!w) putc('0', f);
-	else fprintf(f, "0x%8.8x (%ld%s)",
-		w, w, w == MIN_WORD ? "/-"
+	else fprintf(f, "0x%8.8lx (%ld%s)",
+		(unsigned long)w, (long)w, w == MIN_WORD ? "/-"
 		: (w == MAX_WORD ? "/+"
 		: (w == MIN_LONGWORD ? "/--" 
 		: (w == MAX_LONGWORD ? "/++" : ""))));
@@ -152,10 +152,10 @@ void do_longword P1((w), longword w)
 {
 	if (interactive) print_longword(w);
 	if (do_expect) {
-		if (w != L_expect) {
+		if ((w & 0xfffffffful) != (L_expect & 0xfffffffful)) {
 			if (!interactive) fprint_longword(stderr, w);
 			fprintf(stderr, " != %s (%ld, %ld) -- expected ",
-				opname, L_op1, L_op2 );
+				opname, (long)L_op1, (long)L_op2 );
 			fprint_longword(stderr, L_expect);
 			putc( '\n', stderr );
 		}
@@ -169,7 +169,7 @@ void do_word P1((w), word w )
 		if (w != expect) {
 			if (!interactive) fprint_word(stderr, w);
 			fprintf(stderr, " != %s (%ld, %ld) -- expected ",
-				opname, L_op1, L_op2 );
+				opname, (long)L_op1, (long)L_op2 );
 			fprint_word(stderr, expect);
 			putc('\n', stderr);
 		}
@@ -205,7 +205,7 @@ fail:
 		if (interactive) fprintf(stderr, "? ");
 
 		if (!fgets(buf, sizeof(buf), in)) exit(0);
-		if (c = strchr(buf, '\n')) *c = 0;
+		if ((c = strchr(buf, '\n')) != 0) *c = 0;
 
 		if (*buf == ';' || *buf == '#') continue;
 		if (*buf == '\'') {

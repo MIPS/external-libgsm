@@ -44,7 +44,7 @@ WAV49	= -DWAV49
 # CCFLAGS 	= -c -O
 
 CC		= gcc -ansi -pedantic
-CCFLAGS 	= -c -O2 -DNeedFunctionPrototypes=1
+CCFLAGS 	= -c -O2 -DNeedFunctionPrototypes=1 -Wall -Wno-comment
 
 LD 		= $(CC)
 

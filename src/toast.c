@@ -252,7 +252,7 @@ static char * emalloc P1((len), size_t len)
 	char * s;
 	if (!(s = malloc(len))) {
 		fprintf(stderr, "%s: failed to malloc %d bytes -- abort\n",
-			progname, len);
+			progname, (int)len);
 		onintr();
 		exit(1);
 	}
@@ -270,7 +270,7 @@ static char* normalname P3((name, want, cut), char *name, char *want,char *cut)
 	maxlen = strlen(name) + 1 + strlen(want) + strlen(cut);
 	p = strcpy(emalloc(maxlen), name);
 
-	if (s = suffix(p, cut)) strcpy(s, want);
+	if ((s = suffix(p, cut)) != 0) strcpy(s, want);
 	else if (*want && !suffix(p, want)) strcat(p, want);
 
 	return p;
@@ -416,8 +416,9 @@ static int okay_as_input P3((name,f,st), char* name, FILE* f, struct stat * st)
 	}
 	if (st->st_nlink > 1 && !f_cat && !f_precious) {
 		fprintf(stderr, 
-		      "%s: \"%s\" has %s other link%s -- unchanged.\n",
-			progname,name,st->st_nlink - 1,"s" + (st->st_nlink<=2));
+		      "%s: \"%s\" has %d other link%s -- unchanged.\n",
+			progname, name, (int)(st->st_nlink - 1),
+			"s" + (st->st_nlink <= 2));
 		return 0;
 	}
 	return 1;
@@ -586,7 +587,7 @@ static int process_decode P0()
 		if (cc != sizeof(s)) {
 			if (cc >= 0) fprintf(stderr,
 			"%s: incomplete frame (%d byte%s missing) from %s\n",
-					progname, sizeof(s) - cc,
+					progname, (int)(sizeof(s) - cc),
 					"s" + (sizeof(s) - cc == 1),
 					inname ? inname : "stdin" );
 			gsm_destroy(r);
@@ -624,8 +625,6 @@ static int process_decode P0()
 
 static int process P1((name), char * name)
 {
-	int step = 0;
-
 	out     = (FILE *)0;
 	in      = (FILE *)0;
 
@@ -754,7 +753,6 @@ int main P2((ac, av), int ac, char **av)
 {
 	int  		opt;
 	extern int	optind;
-	extern char	* optarg;
 
 	parse_argv0(*av);
 
@@ -779,7 +777,6 @@ int main P2((ac, av), int ac, char **av)
 	case 'h': help();    exit(0);
 
 	default: 
-	usage:
 		fprintf(stderr,
 	"Usage: %s [-fcpdhvuaslFC] [files...] (-h for help)\n",
 			progname);

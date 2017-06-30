@@ -37,6 +37,7 @@ cc_library_static {
     cflags: [
         "-DSASR",
         "-DWAV49",
+        "-Werror",
         "-Wno-unused-parameter",
     ],
 
